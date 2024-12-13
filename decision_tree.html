@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interaktiver Entscheidungsbaum</title>
+    <style>
+        body {
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4; /* Sanfter Hintergrund */
+        }
+        svg {
+            width: 100%;
+            max-width: 1000px;
+            height: 700px;
+        }
+        .node {
+            fill: url(#blueGradient);
+            stroke: #005f99;
+            stroke-width: 2px;
+            filter: drop-shadow(3px 3px 5px rgba(0, 0, 0, 0.2));
+        }
+        .anomaly {
+            fill: url(#redGradient);
+            stroke: #990000;
+        }
+        .line {
+            stroke: #333;
+            stroke-width: 3px;
+            stroke-linecap: round;
+            opacity: 0; /* Unsichtbar am Anfang */
+            transition: opacity 1s ease-in;
+        }
+        .node.hidden {
+            opacity: 0; /* Unsichtbar */
+            transition: opacity 1s ease-in;
+        }
+        .node.visible {
+            opacity: 1; /* Sichtbar */
+        }
+        text {
+            font-size: 16px;
+            fill: white;
+            font-weight: bold;
+            text-anchor: middle;
+            dominant-baseline: middle;
+        }
+    </style>
+</head>
+<body>
+    <svg id="tree">
+        <!-- Definiere Farbverläufe -->
+        <defs>
+            <linearGradient id="blueGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#4facfe;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#00f2fe;stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:#f12711;stop-opacity:1" />
+                <stop offset="100%" style="stop-color:#f5af19;stop-opacity:1" />
+            </linearGradient>
+        </defs>
+
+        <!-- Verbindungen -->
+        <line x1="500" y1="50" x2="300" y2="200" class="line" id="line-256-45"></line>
+        <line x1="500" y1="50" x2="700" y2="200" class="line" id="line-256-211"></line>
+        <line x1="300" y1="200" x2="200" y2="350" class="line" id="line-45-1"></line>
+        <line x1="300" y1="200" x2="400" y2="350" class="line" id="line-45-44"></line>
+        <line x1="700" y1="200" x2="600" y2="350" class="line" id="line-211-190"></line>
+        <line x1="700" y1="200" x2="800" y2="350" class="line" id="line-211-21"></line>
+        <line x1="800" y1="350" x2="700" y2="500" class="line" id="line-21-20"></line>
+        <line x1="800" y1="350" x2="900" y2="500" class="line" id="line-21-1"></line>
+
+        <!-- Knoten -->
+        <circle cx="500" cy="50" r="30" class="node" id="node-256"></circle>
+        <text x="500" y="50">256</text>
+
+        <circle cx="300" cy="200" r="30" class="node hidden" id="node-45"></circle>
+        <text x="300" y="200" class="hidden" id="text-45">45</text>
+
+        <circle cx="700" cy="200" r="30" class="node hidden" id="node-211"></circle>
+        <text x="700" y="200" class="hidden" id="text-211">211</text>
+
+        <circle cx="200" cy="350" r="30" class="node hidden anomaly" id="node-1"></circle>
+        <text x="200" y="350" class="hidden" id="text-1">1</text>
+
+        <circle cx="400" cy="350" r="30" class="node hidden" id="node-44"></circle>
+        <text x="400" y="350" class="hidden" id="text-44">44</text>
+
+        <circle cx="600" cy="350" r="30" class="node hidden" id="node-190"></circle>
+        <text x="600" y="350" class="hidden" id="text-190">190</text>
+
+        <circle cx="800" cy="350" r="30" class="node hidden" id="node-21"></circle>
+        <text x="800" y="350" class="hidden" id="text-21">21</text>
+
+        <circle cx="700" cy="500" r="30" class="node hidden" id="node-20"></circle>
+        <text x="700" y="500" class="hidden" id="text-20">20</text>
+
+        <circle cx="900" cy="500" r="30" class="node hidden anomaly" id="node-1-last"></circle>
+        <text x="900" y="500" class="hidden" id="text-1-last">1</text>
+    </svg>
+
+    <script>
+        // Schrittweise Sichtbarkeit der Elemente
+        const steps = [
+            { line: "line-256-45", node: "node-45", text: "text-45" },
+            { line: "line-256-211", node: "node-211", text: "text-211" },
+            { line: "line-45-1", node: "node-1", text: "text-1" },
+            { line: "line-45-44", node: "node-44", text: "text-44" },
+            { line: "line-211-190", node: "node-190", text: "text-190" },
+            { line: "line-211-21", node: "node-21", text: "text-21" },
+            { line: "line-21-20", node: "node-20", text: "text-20" },
+            { line: "line-21-1", node: "node-1-last", text: "text-1-last" }
+        ];
+
+        let currentStep = 0;
+
+        document.addEventListener("keydown", (event) => {
+            if (event.code === "Space") {
+                if (currentStep < steps.length) {
+                    const { line, node, text } = steps[currentStep];
+                    document.getElementById(line).style.opacity = "1"; // Linie einblenden
+                    document.getElementById(node).classList.replace("hidden", "visible"); // Knoten einblenden
+                    document.getElementById(text).classList.replace("hidden", "visible"); // Text einblenden
+                    currentStep++;
+                }
+            }
+        });
+    </script>
+</body>
+</html>
